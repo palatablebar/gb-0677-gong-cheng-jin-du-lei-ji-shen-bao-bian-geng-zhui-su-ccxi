@@ -6,6 +6,8 @@ def evaluate(rows,context):
     stages=[v for v in context.values() if isinstance(v,dict) and "metrics" in v]
     balances=[s["metrics"]["balanced"] for s in stages if "balanced" in s["metrics"]]
     if balances and not all(balances): raise DomainError("UNBALANCED","来源行未对平，不能归档")
+    valuation=context.get("valuation")
+    if isinstance(valuation,dict) and "rows" in valuation: rows=valuation["rows"]
     ids=[str(r.get("claim_id",r.get("_line",""))) for r in rows]
     if len(ids)!=len(set(ids)): raise DomainError("ARCHIVE_DUPLICATE","归档业务键重复")
     encoded=json.dumps(rows,ensure_ascii=False,sort_keys=True,default=str).encode()

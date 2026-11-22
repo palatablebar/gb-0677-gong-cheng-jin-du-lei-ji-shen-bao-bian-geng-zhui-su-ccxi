@@ -19,11 +19,12 @@ docker compose exec -T app pytest -q
 - 4. 累计还原：`/increment`，`/api/increment`。
 - 5. 扣回核算：`/deductions`，`/api/deductions`。
 - 6. 进度对账：`/valuation`，`/api/valuation`。
-- 7. 签证归档：`/certificates`，`/api/certificates`。
+- 7. 本期承接：`/carryover`，`/api/carryover`。
+- 8. 签证归档：`/certificates`，`/api/certificates`。
 
 ## 核心规则
 
-累计申报必须减前期已审金额，变更按审批生效版本覆盖；负进度需关联冲回证据。
+累计申报必须减前期已审金额，变更按审批生效版本覆盖；负进度需关联冲回证据。项目级累计与分项累计混批时，本期承接结果唯一：已签项目增量=各分项归属合计+未归属余量；分项归属必须带变更依据与前期已签量，余量显式挂账不摊派；对平（余量为零）后才能正式签认，切换失败保留上一版结果，同一累计版本重跑不新增本期增量。
 
 ## 演示
 
@@ -34,7 +35,7 @@ docker compose exec -T app pytest -q
 
 ## 输入与输出
 
-输入列见 `docs/DATA-DICTIONARY.md`。项目包含dirty.csv、clean.csv、legacy.csv，统一走实际导入路径。上传限制4MB，拒绝不带时区的时间。业务键按字符串保留，Decimal参与计算，空值不会当零。
+输入列见 `docs/DATA-DICTIONARY.md`。项目包含dirty.csv、clean.csv、legacy.csv、mixed.csv（项目级与分项混装批），统一走实际导入路径。上传限制4MB，拒绝不带时区的时间。业务键按字符串保留，Decimal参与计算，空值不会当零。
 
 `POST /api/runs` 接收sample或csv；`GET /api/runs`返回历史批次；`POST /api/runs/<id>/review`需要version与decision；`GET /api/runs/<id>/archive`返回唯一证据导出。
 

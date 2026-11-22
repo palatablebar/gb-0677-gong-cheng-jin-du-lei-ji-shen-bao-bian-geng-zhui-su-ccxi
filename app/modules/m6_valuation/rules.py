@@ -4,10 +4,12 @@ from app.errors import DomainError
 def evaluate(rows,context):
     intake=context.get("intake")
     bad=context.get("quarantine",[])
+    project=(context.get("billitems") or {}).get("project_rows",[])
     accepted=set(x for row in rows for x in sources(row))
+    accepted|=set(x for row in project for x in sources(row))
     rejected=set(x for row in bad for x in sources(row))
     if accepted & rejected: raise DomainError("LINEAGE_OVERLAP","同一来源行被重复裁决")
-    m={"accepted_inputs":len(accepted),"quarantine_inputs":len(rejected),"output_records":len(rows)}
+    m={"accepted_inputs":len(accepted),"quarantine_inputs":len(rejected),"output_records":len(rows),"project_inputs":len(set(x for row in project for x in sources(row)))}
     if intake:
         excluded=intake["duplicate"]+intake["blank"]+intake["repeated_headers"]
         m.update(input=intake["input"],excluded=excluded,balanced=intake["input"]==len(accepted)+len(rejected)+excluded)

@@ -39,6 +39,11 @@ def create_app():
     def review(run_id):
         p=request.get_json(silent=True) or {}
         if not isinstance(p.get("version"),int): raise DomainError("BAD_VERSION","请提供版本号")
+        if p.get("decision")=="已复核":
+            run=store.get(run_id)
+            for stage in run["stages"]:
+                if stage.get("metrics",{}).get("reconciled") is False:
+                    raise DomainError("UNRECONCILED","项目累计与分项归属未对平，不能正式签认",409)
         return store.review(run_id,p["version"],p.get("decision"))
     @application.get("/api/runs/<run_id>/archive")
     def archive(run_id):
